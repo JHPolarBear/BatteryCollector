@@ -4,10 +4,13 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+
+#include "Pickup.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ABatteryCollectorCharacter
@@ -61,6 +64,8 @@ void ABatteryCollectorCharacter::SetupPlayerInputComponent(class UInputComponent
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
+	PlayerInputComponent->BindAction("Collect", IE_Pressed, this, &ABatteryCollectorCharacter::CollectPickups);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &ABatteryCollectorCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ABatteryCollectorCharacter::MoveRight);
 
@@ -80,6 +85,31 @@ void ABatteryCollectorCharacter::SetupPlayerInputComponent(class UInputComponent
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ABatteryCollectorCharacter::OnResetVR);
 }
 
+
+void ABatteryCollectorCharacter::CollectPickups()
+{
+	// Get all overlapping Actors and store them in array
+	TArray<AActor*> CollectedActors;
+
+	CollectionSphere->GetOverlappingActors(CollectedActors);
+
+	// For each Actor we collected 
+	for (int32 iCollected = 0; iCollected < CollectedActors.Num(); iCollected++)
+	{
+		// Cast the actor to APickup
+		APickup* const TestPickup = Cast<APickup>(CollectedActors[iCollected]);
+
+		// If the case is successful and the pickup is valid and active
+		if(TestPickup && !TestPickup->IsPendingKill() && TestPickup->IsActive())
+		{
+			// call the pickup's WaCollected function
+			TestPickup->WasCollected();
+
+			// Deactivate the pickup
+			TestPickup->SetActive(false);
+		}	
+	}
+}
 
 void ABatteryCollectorCharacter::OnResetVR()
 {
