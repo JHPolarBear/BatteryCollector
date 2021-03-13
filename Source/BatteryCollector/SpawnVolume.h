@@ -30,6 +30,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Spawning")
 	FVector GetRandonPointInVolume();
 
+	/** This function toggles whether or not the spawn volume spawns pickups */
+	UFUNCTION(BlueprintCallable, Category = "Spawning")
+	void SetSpawningActive(bool bShouldSpawn);
+
 protected:
 	/** pickup class to spawn **/
 	UPROPERTY(EditAnywhere, Category = "Spawning")
